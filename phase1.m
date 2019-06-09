@@ -39,8 +39,9 @@ t_16 = 1:1/rate_16k:size(data_16k)/rate_16k;
 plot(t_16, data_16k,'r',t, raw_data_mono,'g');
 
 
+% 3.7 Generate a signal using 1kHz cosine function that has the same time
+% Play the sound and plot two cycles of its waveform versus time
 
-%generate cos wave signal
 figure('Name', 'cos');
 
 %x =1:0.0001:1000;
