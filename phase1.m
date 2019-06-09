@@ -23,20 +23,23 @@ audiowrite(output_file, raw_data_mono, sample_rate);
 stop_time = size(raw_data_mono)/sample_rate;
 time_step = 1/sample_rate;
 %sound(raw_data_mono, sample_rate);
-t = 1:time_step:stop_time;
+t = time_step:time_step:stop_time;
 %t = 1:1:size(raw_data_mono);
 
 disp(size(raw_data_mono));
 disp(size(t));
 figure('Name', 'Raw Data Mono');
-plot(t, raw_data_mono);
+%plot(t, raw_data_mono);
 
 % 3.6 If sampling rate is greater than 16k, downsample it
 data_16k = resample(raw_data_mono, 16000, sample_rate);
+stop_time_16k = size(data_16k)/rate_16k
 rate_16k = 16000;
-t_16 = 1:1/rate_16k:size(data_16k)/rate_16k;
-%figure('Name', 'Raw Data resampled');
-plot(t_16, data_16k,'r',t, raw_data_mono,'g');
+t_16 = 1/rate_16k:1/rate_16k:stop_time_16k;
+plot(t(1:2750), raw_data_mono(1:2750),'g');
+figure('Name', 'Raw Data resampled');
+plot(t_16(1:1000), data_16k(1:1000),'r');
+%plot(t, raw_data_mono,'g');
 
 
 % 3.7 Generate a signal using 1kHz cosine function that has the same time
