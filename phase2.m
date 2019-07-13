@@ -72,9 +72,12 @@ t_16 = 1/rate_16k:1/rate_16k:stop_time_16k;
 % plot(t_16(1:1000), data_16k(1:1000),'r',t(1:2750), raw_data_mono(1:2750),'g');
 
 % declaring filter parameters
+passband_num=12
 bandwidth=659;
 pass_1=100;
 pass_2= pass_1+659;
+pass_1_array=100:bandwidth:passband_num*bandwidth
+pass_2_array=758:bandwidth-1:13*(bandwidth-1)
 
 freq = 600;
 cos_1kHz = cos(freq*2*pi*t_16); % lesson learned, use the same sample rate for t!
@@ -82,9 +85,29 @@ cycle_plot = 20;
 time_plot = cycle_plot/freq;
 figure('Name', 'Two Waveforms of Cosine Function');
 plot(t(1:time_plot*sample_rate),(cos_1kHz(1:time_plot*sample_rate)) );
-filtered_cos1k = filter(GenEquiripple(pass_1,pass_2), cos_1kHz);
-figure('Name', 'Bandpass cos 1k 1 in time');
-plot(t(1:time_plot*sample_rate),(filtered_cos1k(1:time_plot*sample_rate)) );
+
+plotTwoPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, sample_rate, t)
+    
+function plotTwoPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, sample_rate, t)
+    low_start=pass_1_array(1)
+    low_end=pass_2_array(1)
+    high_start=pass_1_array(length(pass_1_array))
+    high_end=pass_2_array(length(pass_2_array))
+%     filtered_cos1k_low = filter(GenEquiripple(low_start,low_end), cos_1kHz);
+%     figure('Name', 'Bandpass cos 1k 1 in time (low)');
+%     plot(t(1:time_plot*sample_rate),(filtered_cos1k_low(1:time_plot*sample_rate)) );
+    filtered_cos1k_high = filter(GenEquiripple(high_start,high_end), cos_1kHz);
+    figure('Name', 'Bandpass cos 1k 1 in time (high)');
+    plot(t(1:time_plot*sample_rate),(filtered_cos1k_high(1:time_plot*sample_rate)));
+end
+
+function plotAllPassband()
+    for p = 1:passband_num
+        filtered_cos1k = filter(GenEquiripple(pass_1_array(p),pass_2_array(p)), cos_1kHz);
+        figure('Name', 'Bandpass cos 1k 1 in time');
+        plot(t(1:time_plot*sample_rate),(filtered_cos1k(1:time_plot*sample_rate)) );
+    end
+end
 
 function Hd2 = GenEquiripple(pass1, pass2)
 %GENEQUIRIPPLE Returns a discrete-time filter object.
