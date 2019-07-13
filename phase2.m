@@ -71,9 +71,10 @@ t_16 = 1/rate_16k:1/rate_16k:stop_time_16k;
 % figure('Name', 'Data Comparison');
 % plot(t_16(1:1000), data_16k(1:1000),'r',t(1:2750), raw_data_mono(1:2750),'g');
 
-
-
-
+% declaring filter parameters
+bandwidth=659;
+pass_1=100;
+pass_2= pass_1+659;
 
 freq = 600;
 cos_1kHz = cos(freq*2*pi*t_16); % lesson learned, use the same sample rate for t!
@@ -81,7 +82,7 @@ cycle_plot = 20;
 time_plot = cycle_plot/freq;
 figure('Name', 'Two Waveforms of Cosine Function');
 plot(t(1:time_plot*sample_rate),(cos_1kHz(1:time_plot*sample_rate)) );
-filtered_cos1k = filter(Equiripple1(), cos_1kHz);
+filtered_cos1k = filter(GenEquiripple(pass_1,pass_2), cos_1kHz);
 figure('Name', 'Bandpass cos 1k 1 in time');
 plot(t(1:time_plot*sample_rate),(filtered_cos1k(1:time_plot*sample_rate)) );
 
