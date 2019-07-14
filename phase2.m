@@ -61,8 +61,11 @@ pass_2_array=100+bandwidth:bandwidth:(passband_num+1)*bandwidth
 
 % length = length(filtered_data16k);
 
-% figure('Name', 'Raw Data 16k');
-% plot(t_16(1:1000), data_16k(1:1000),'r');
+figure('Name', 'Raw Data 16k');
+plot(t_16(1:1000), data_16k(1:1000),'r');
+% plotSoundAllPassband(pass_1_array, pass_2_array, data_16k, t_16, passband_num);
+plotSoundTwoPassband(pass_1_array, pass_2_array, data_16k, t_16, rate_16k);
+
 % filtered_data16k = filter(Equiripple1(pass_1, pass_2), data_16k);
 % figure('Name', 'Bandpass output');
 % plot(t_16(1:1000), filtered_data16k(1:1000),'r');
@@ -101,14 +104,51 @@ cycle_plot = 100;
 time_plot = cycle_plot/freq;
 
 
+% figure('Name', 'Two Waveforms of Cosine Function');
+% plot(t(1:time_plot*rate_16k),(cos_1kHz(1:time_plot*rate_16k)) );
+% plotCosTwoPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_16k, t_16);
+% plotCosAllPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_16k, t_16, passband_num);
 
-figure('Name', 'Two Waveforms of Cosine Function');
-plot(t(1:time_plot*rate_16k),(cos_1kHz(1:time_plot*rate_16k)) );
 
-% plotTwoPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_16k, t_16);
-plotAllPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_16k, t_16, passband_num);
+function plotSoundTwoPassband(pass_1_array, pass_2_array, data_16k, t_16, rate_16k)
+    low_start=pass_1_array(1);
+    low_end=pass_2_array(1);
+    high_start=pass_1_array(length(pass_1_array));
+    filtered_data16k_low = filter(Equiripple1(low_start, low_end), data_16k);
+    fvtool(Equiripple1(low_start, low_end));
+    figure('Name', 'Bandpass output of lowest channel');
+    plot(t_16(1:1000), filtered_data16k_low(1:1000),'r');
     
-function plotTwoPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_16k, t_16)
+    
+    filtered_data16k_high = filter(Equiripple1(high_start, 7950), data_16k);
+    fvtool(Equiripple1(high_start, 7950));
+    figure('Name', 'Bandpass output of highest channel');
+    plot(t_16(1:1000), filtered_data16k_high(1:1000),'r');
+    
+    fvtool(Equiripple1(50, 100));
+    filtered_data16k_test = filter(Equiripple1(759, 1418), data_16k);
+    figure('Name', 'Bandpass output of 759-1418 Hz');
+    plot(t_16(1:1000), filtered_data16k_test(1:1000),'r');
+    sound(filtered_data16k_test, rate_16k);
+end
+
+function plotSoundAllPassband(pass_1_array, pass_2_array, data_16k, t_16, passband_num)
+    for p = 1:passband_num
+        if p==12
+            filtered_data16k = filter(Equiripple1(pass_1_array(p),7950),data_16k);
+        else
+            filtered_data16k = filter(Equiripple1(pass_1_array(p),pass_2_array(p)), data_16k);
+        end
+        title=strcat('Bandpass sound file in time',num2str(pass_1_array(p)),'-',num2str(pass_2_array(p)));
+        figure('Name', title);
+        plot(t_16(1:1000), filtered_data16k(1:1000),'r');
+%         plot(t_16(1:time_plot*rate_16k),(filtered_cos1k(1:time_plot*rate_16k)) );
+    end
+end
+
+
+    
+function plotCosTwoPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_16k, t_16)
     low_start=pass_1_array(1);
     low_end=pass_2_array(1);
     high_start=pass_1_array(length(pass_1_array));
@@ -121,7 +161,7 @@ function plotTwoPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_1
     plot(t_16(1:time_plot*rate_16k),(filtered_cos1k_high(1:time_plot*rate_16k)));
 end
 
-function plotAllPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_16k, t_16, passband_num)
+function plotCosAllPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_16k, t_16, passband_num)
     for p = 1:passband_num
         if p==12
             filtered_cos1k = filter(GenEquiripple(pass_1_array(p),7950), cos_1kHz);
