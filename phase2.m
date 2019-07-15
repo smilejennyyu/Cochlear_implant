@@ -1,5 +1,7 @@
+%------Phase 1 start here-------%
+%------------------------------------------------------------------------------------%
 % 3.1 Create program to read the file
-filename = 'Khan_Girl.wav';
+filename = 'emmaWatson.mp4';
 [raw_data,sample_rate] = audioread(filename);
 
 % 3.2 Check if input sound is stereo
@@ -13,7 +15,7 @@ else
 end
 
 % 3.3 Play the sound
-%sound(raw_data_mono, sample_rate);
+% sound(raw_data_mono, sample_rate);
 
 % 3.4 Write sound to a new file 
 output_file = strcat('new_', filename);
@@ -50,131 +52,117 @@ t_16 = 1/rate_16k:1/rate_16k:stop_time_16k;
 
 %------Phase 2 start here-------%
 %------------------------------------------------------------------------------------%
-% declaring filter parameters
-
-
-passband_num=12
+% declaring parameters
+passband_num=12;
 bandwidth=659;
+pass_1_array=100:bandwidth:passband_num*bandwidth;
+pass_2_array=100+bandwidth:bandwidth:(passband_num+1)*bandwidth;
 
-pass_1_array=100:bandwidth:passband_num*bandwidth
-pass_2_array=100+bandwidth:bandwidth:(passband_num+1)*bandwidth
-
-% length = length(filtered_data16k);
-
+% ------ Plot acutal sound signal by calling function ---------%
 figure('Name', 'Raw Data 16k');
-plot(t_16(1:1000), data_16k(1:1000),'r');
+plot(t_16(1000:1999), data_16k(1000:1999),'r');
 % plotSoundAllPassband(pass_1_array, pass_2_array, data_16k, t_16, passband_num);
-plotSoundTwoPassband(pass_1_array, pass_2_array, data_16k, t_16, rate_16k);
-
-% filtered_data16k = filter(Equiripple1(pass_1, pass_2), data_16k);
-% figure('Name', 'Bandpass output');
-% plot(t_16(1:1000), filtered_data16k(1:1000),'r');
-% 
-% rec_filtered_data16k = abs(filtered_data16k);
-% figure('Name', 'Rectified bandpass output');
-% plot(t_16(1:1000), rec_filtered_data16k(1:1000),'r');
-% hold on;
-% % lp1 = dsp.FIRFilter('Numerator', firpm(20,[0 0.03 0.1 1],[1 1 0 0]));
-% % env_rec_filtered_data16k = lp1(rec_filtered_data16k);
-% env_rec_filtered_data16k  = filter(lp30, rec_filtered_data16k);
-% plot(t_16(1:1000), env_rec_filtered_data16k(1:1000),'b');
-% fvtool(lp30);
-% sound(data_16k, rate_16k);
-
-
-% figure('Name', 'last Raw Data 16k');
-% plot(t_16(length-1000:length), data_16k(length-1000:length),'r');
-% filtered_data16k = filter(Equiripple1(pass_1, pass_2), data_16k);
-% figure('Name', 'last Bandpass output');
-% plot(t_16(length-1000:length), filtered_data16k(length-1000:length),'r');
-% 
-% rec_filtered_data16k = abs(filtered_data16k);
-% figure('Name', 'last Rectified bandpass output');
-% plot(t_16(length-1000:length), rec_filtered_data16k(length-1000:length),'r');
-% hold on;
-% env_rec_filtered_data16k  = filter(lowbutter, rec_filtered_data16k);
-% plot(t_16(length-1000:length), env_rec_filtered_data16k(length-1000:length),'b');
+plotSoundTwoPassband(pass_1_array, pass_2_array, data_16k, t_16);
 
 
 
-
-freq = 150;
-cos_1kHz = cos(freq*2*pi*t_16); % lesson learned, use the same sample rate for t!
-cycle_plot = 100;
-time_plot = cycle_plot/freq;
-
-
+% ------ Plot cosine signal to check correctness ---------%
+% freq =1800;
+% cos_1kHz = cos(freq*2*pi*t_16); % lesson learned, use the same sample rate for t!
+% cycle_plot = 70;
+% time_plot = cycle_plot/freq;
 % figure('Name', 'Two Waveforms of Cosine Function');
 % plot(t(1:time_plot*rate_16k),(cos_1kHz(1:time_plot*rate_16k)) );
 % plotCosTwoPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_16k, t_16);
 % plotCosAllPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_16k, t_16, passband_num);
 
-
-function plotSoundTwoPassband(pass_1_array, pass_2_array, data_16k, t_16, rate_16k)
+% For Task 4 and Task 8 in Phase 2 %
+function plotSoundTwoPassband(pass_1_array, pass_2_array, data_16k, t_16)
+    % Declaring parameters for passband parameters for first and last channels
     low_start=pass_1_array(1);
     low_end=pass_2_array(1);
     high_start=pass_1_array(length(pass_1_array));
-    filtered_data16k_low = filter(Equiripple1(low_start, low_end), data_16k);
-    fvtool(Equiripple1(low_start, low_end));
+    
+    % Plot lowest channel 
+    filtered_data16k_low = filter(Cheb2(low_start, low_end), data_16k);
     figure('Name', 'Bandpass output of lowest channel');
-    plot(t_16(1:1000), filtered_data16k_low(1:1000),'r');
+    plot(t_16((1000:1999)), filtered_data16k_low((1000:1999)),'r');
+    xlabel('Time (s)'); 
+    ylabel('Amplitude');
+    % Plot rectified lowest channel and the envelope using low pass filter
+    rec_filtered_data16k_low = abs(filtered_data16k_low);
+    env_rec_filtered_data16k_low  = filter(lp30, rec_filtered_data16k_low);
+    figure('Name', 'Envelope of the rectified lowest channel');
+    plot(t_16(1000:1999), rec_filtered_data16k_low(1000:1999),'r'); 
+    hold on;
+    plot(t_16(1000:1999), env_rec_filtered_data16k_low(1000:1999),'b'); 
+    xlabel('Time (s)') 
+    ylabel('Amplitude')
     
-    
-    filtered_data16k_high = filter(Equiripple1(high_start, 7950), data_16k);
-    fvtool(Equiripple1(high_start, 7950));
+    % Plot highest channel 
+    filtered_data16k_high = filter(Cheb2(high_start, 7950), data_16k);
     figure('Name', 'Bandpass output of highest channel');
-    plot(t_16(1:1000), filtered_data16k_high(1:1000),'r');
-    
-    fvtool(Equiripple1(50, 100));
-    filtered_data16k_test = filter(Equiripple1(759, 1418), data_16k);
-    figure('Name', 'Bandpass output of 759-1418 Hz');
-    plot(t_16(1:1000), filtered_data16k_test(1:1000),'r');
-    sound(filtered_data16k_test, rate_16k);
+    plot(t_16(1000:1999), filtered_data16k_high(1000:1999),'r');
+    xlabel('Time (s)') 
+    ylabel('Amplitude')
+    % Plot rectified highest channel and the envelope using low pass filter
+    rec_filtered_data16k_high = abs(filtered_data16k_high);
+    env_rec_filtered_data16k_high  = filter(lp30, rec_filtered_data16k_high);
+    figure('Name', 'Envelope of the rectified highest channel');
+    plot(t_16(1000:1999), rec_filtered_data16k_high(1000:1999),'r');
+    hold on;
+    plot(t_16(1000:1999), env_rec_filtered_data16k_high(1000:1999),'b');
+    xlabel('Time (s)') 
+    ylabel('Amplitude')
 end
 
+% For loop function to filter and plot each channels %
 function plotSoundAllPassband(pass_1_array, pass_2_array, data_16k, t_16, passband_num)
+    % Loop through each band
     for p = 1:passband_num
         if p==12
-            filtered_data16k = filter(Equiripple1(pass_1_array(p),7950),data_16k);
+            % For last band, the end parameter need a bit of adjustment
+            filtered_data16k = filter(Cheb2(pass_1_array(p),7950), data_16k);
         else
-            filtered_data16k = filter(Equiripple1(pass_1_array(p),pass_2_array(p)), data_16k);
+            % Use Cheb2 as the band pass filter function
+            filtered_data16k = filter(Cheb2(pass_1_array(p),pass_2_array(p)), data_16k);
         end
-        title=strcat('Bandpass sound file in time',num2str(pass_1_array(p)),'-',num2str(pass_2_array(p)));
+        title=strcat('Bandpass sound file in frequency range ',num2str(pass_1_array(p)),'-',num2str(pass_2_array(p)));
         figure('Name', title);
-        plot(t_16(1:1000), filtered_data16k(1:1000),'r');
-%         plot(t_16(1:time_plot*rate_16k),(filtered_cos1k(1:time_plot*rate_16k)) );
+        plot(t_16(1000:1999), filtered_data16k(1000:1999),'r');
     end
 end
 
-
-    
+% Checker function using cosine %
 function plotCosTwoPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_16k, t_16)
     low_start=pass_1_array(1);
     low_end=pass_2_array(1);
     high_start=pass_1_array(length(pass_1_array));
-    high_end=pass_2_array(length(pass_2_array));
-    filtered_cos1k_low = filter(GenEquiripple(low_start,low_end), cos_1kHz);
-    figure('Name', 'Bandpass cos 1k 1 in time (low)');
+    
+    filtered_cos1k_low = filter(Cheb2(low_start,low_end), cos_1kHz);
+    figure('Name', 'Bandpass cosine in frequency (low)');
     plot(t_16(1:time_plot*rate_16k),(filtered_cos1k_low(1:time_plot*rate_16k)) );
-    filtered_cos1k_high = filter(GenEquiripple(high_start,7950), cos_1kHz);
-    figure('Name', 'Bandpass cos 1k 1 in time (high)');
+    filtered_cos1k_high = filter(Cheb2(high_start,7950), cos_1kHz);
+    figure('Name', 'Bandpass cosine in frequency (high)');
     plot(t_16(1:time_plot*rate_16k),(filtered_cos1k_high(1:time_plot*rate_16k)));
 end
 
+% Checker function using cosine %
 function plotCosAllPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_16k, t_16, passband_num)
     for p = 1:passband_num
         if p==12
-            filtered_cos1k = filter(GenEquiripple(pass_1_array(p),7950), cos_1kHz);
+            filtered_cos1k = filter(Cheb2(pass_1_array(p),7950), cos_1kHz);
         else
-            filtered_cos1k = filter(GenEquiripple(pass_1_array(p),pass_2_array(p)), cos_1kHz);
+            filtered_cos1k = filter(Cheb2(pass_1_array(p),pass_2_array(p)), cos_1kHz);
         end
-        title=strcat('Bandpass cos 1k 1 in time',num2str(pass_1_array(p)),'-',num2str(pass_2_array(p)));
+        title=strcat('Bandpass cosine function in frequency',num2str(pass_1_array(p)),'-',num2str(pass_2_array(p)));
         figure('Name', title);
         plot(t_16(1:time_plot*rate_16k),(filtered_cos1k(1:time_plot*rate_16k)) );
     end
 end
 
-
+%----- low pass filter bank ----%
+% lp30 is the chosen low pass filter
 function Hd30 = lp30
 %LP30 Returns a discrete-time filter object.
 
@@ -183,7 +171,7 @@ function Hd30 = lp30
 % All frequency values are in Hz.
 Fs = 16000;  % Sampling Frequency
 
-N     = 30;   % Order
+N     = 50;   % Order
 Fpass = 400;  % Passband Frequency
 Fstop = 450;  % Stopband Frequency
 Wpass = 1;    % Passband Weight
@@ -217,7 +205,6 @@ b  = firls(N, [0 Fpass Fstop Fs/2]/(Fs/2), [1 1 0 0], [Wpass Wstop]);
 Hdleast = dfilt.dffir(b);
 end
 
-
 function Hd = lowbutter
 %LOWBUTTER Returns a discrete-time filter object.
 
@@ -240,9 +227,6 @@ match = 'stopband';  % Band to match exactly
 h  = fdesign.lowpass(Fpass, Fstop, Apass, Astop, Fs);
 Hd = design(h, 'butter', 'MatchExactly', match);
 end
-
-% [EOF]
-
 
 function Hdl3 = lowpass3
 %LOWPASS3 Returns a discrete-time filter object.
@@ -270,29 +254,6 @@ b  = firpm(N, Fo, Ao, W, {dens});
 Hdl3 = dfilt.dffir(b);
 end
 
-function Hdl2 = lowpassEqui2
-%LOWPASSEQUI2 Returns a discrete-time filter object.
-
-
-% Equiripple Lowpass filter designed using the FIRPM function.
-
-% All frequency values are in Hz.
-Fs = 16000;  % Sampling Frequency
-
-Fpass = 400;               % Passband Frequency
-Fstop = 450;               % Stopband Frequency
-Dpass = 0.0057563991496;   % Passband Ripple
-Dstop = 3.1622776602e-06;  % Stopband Attenuation
-dens  = 20;                % Density Factor
-
-% Calculate the order from the parameters using FIRPMORD.
-[N, Fo, Ao, W] = firpmord([Fpass, Fstop]/(Fs/2), [1 0], [Dpass, Dstop]);
-
-% Calculate the coefficients using the FIRPM function.
-b  = firpm(N, Fo, Ao, W, {dens});
-Hdl2 = dfilt.dffir(b);
-end
-
 function HdLow2 = lowpassCheb1
 % bad example, use for justification
 %LOWPASSCHEB1 Returns a discrete-time filter object.
@@ -315,54 +276,33 @@ h  = fdesign.lowpass('N,Fp,Ap', N, Fpass, Apass, Fs);
 HdLow2 = design(h, 'cheby1');
 end
 
-function HdLow = lowpassEqui
-%LOWPASSEQUI Returns a discrete-time filter object.
+
+%----- band pass filter bank ----%
+% Cheb2 is the chosen band pass filter
+function HdC = Cheb2(pass1,pass2)
+%CHEB2ASTOP100 Returns a discrete-time filter object.
 
 % MATLAB Code
 % Generated by MATLAB(R) 9.4 and DSP System Toolbox 9.6.
-% Generated on: 13-Jul-2019 18:19:36
-
-% Equiripple Lowpass filter designed using the FIRPM function.
-
-% All frequency values are in Hz.
-Fs = 16000;  % Sampling Frequency
-
-Fpass = 400;             % Passband Frequency
-Fstop = 450;             % Stopband Frequency
-Dpass = 0.028774368332;  % Passband Ripple
-Dstop = 1e-05;           % Stopband Attenuation
-dens  = 20;              % Density Factor
-
-% Calculate the order from the parameters using FIRPMORD.
-[N, Fo, Ao, W] = firpmord([Fpass, Fstop]/(Fs/2), [1 0], [Dpass, Dstop]);
-
-% Calculate the coefficients using the FIRPM function.
-b  = firpm(N, Fo, Ao, W, {dens});
-HdLow = dfilt.dffir(b);
-end
-
-
-function Hd5 = Cheb2
-%CHEB2 Returns a discrete-time filter object.
+% Generated on: 14-Jul-2019 19:37:31
 
 % Chebyshev Type II Bandpass filter designed using FDESIGN.BANDPASS.
 
 % All frequency values are in Hz.
 Fs = 16000;  % Sampling Frequency
-
-Fstop1 = 50;          % First Stopband Frequency
-Fpass1 = 100;         % First Passband Frequency
-Fpass2 = 759;         % Second Passband Frequency
-Fstop2 = 809;         % Second Stopband Frequency
-Astop1 = 60;          % First Stopband Attenuation (dB)
+Fstop1 = pass1-50;              % First Stopband Frequency
+Fpass1 = pass1;             % First Passband Frequency
+Fpass2 = pass2;             % Second Passband Frequency
+Fstop2 = pass2+50;             % Second Stopband Frequency
+Astop1 = 100;         % First Stopband Attenuation (dB)
 Apass  = 1;           % Passband Ripple (dB)
-Astop2 = 80;          % Second Stopband Attenuation (dB)
+Astop2 = 100;         % Second Stopband Attenuation (dB)
 match  = 'stopband';  % Band to match exactly
 
 % Construct an FDESIGN object and call its CHEBY2 method.
 h  = fdesign.bandpass(Fstop1, Fpass1, Fpass2, Fstop2, Astop1, Apass, ...
                       Astop2, Fs);
-Hd5 = design(h, 'cheby2', 'MatchExactly', match);
+HdC = design(h, 'cheby2', 'MatchExactly', match);
 end
 
 function Hd4 = Cheb1
@@ -466,5 +406,7 @@ dens   = 20;              % Density Factor
 b  = firpm(N, Fo, Ao, W, {dens});
 Hd1 = dfilt.dffir(b);
 end
+
+%------Phase 2 end here-------%
 
 
