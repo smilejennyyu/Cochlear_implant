@@ -3,12 +3,16 @@
 % 3.1 Create program to read the file
 filename = 'emmaWatson.mp4';
 [raw_data,sample_rate] = audioread(filename);
+plot_upper = 1000;
+plot_lower =  1999;
 
 % 3.2 Check if input sound is stereo
 [m,n] = size(raw_data);
 if n > 1 % If stereo:
     % Combine two channels into one and take average
-    raw_data_mono = sum(raw_data,2) / size(raw_data,2);
+    %       raw_data_mono = sum(raw_data,2) / size(raw_data,2);
+    % TA said we should not take the average
+    raw_data_mono = sum(raw_data,2);
     %disp(raw_data_mono);
 else
     raw_data_mono = raw_data;
@@ -30,9 +34,9 @@ sample_number = 1:1:size(raw_data_mono);
 
 %disp(strcat('raw_data_mono size: ', string(size(raw_data_mono))));
 %disp(strcat('t size: ', string(size(t))));
-%figure('Name', 'Raw Data Mono vs. Sample Number');
-%plot(sample_number, raw_data_mono,'g');
-%title('3.5 Mono Sound Waveform(Amplitude vs. Sample Number)');
+% figure('Name', 'Raw Data Mono vs. Sample Number');
+% plot(sample_number, raw_data_mono,'g');
+% title('3.5 Mono Sound Waveform(Amplitude vs. Sample Number)');
 
 % 3.6 If sampling rate is greater than 16k, downsample it
 data_16k = resample(raw_data_mono, 16000, sample_rate);
@@ -41,8 +45,8 @@ rate_16k = 16000;
 stop_time_16k = size(data_16k)/rate_16k;
 t_16 = 1/rate_16k:1/rate_16k:stop_time_16k;
 
-% figure('Name', 'Raw Data Resampled');
-% plot(t_16(1:1000), data_16k(1:1000),'r');
+figure('Name', 'Raw Data Resampled against time');
+plot(t_16(plot_upper:plot_lower), data_16k(plot_upper:plot_lower),'r');
 % sound(data_16k, rate_16k);
 % figure('Name', 'Data Comparison');
 % plot(t_16(1:1000), data_16k(1:1000),'r',t(1:2750), raw_data_mono(1:2750),'g');
@@ -58,8 +62,10 @@ bandwidth=659;
 pass_1_array=100:bandwidth:passband_num*bandwidth;
 pass_2_array=100+bandwidth:bandwidth:(passband_num+1)*bandwidth;
 
+
 % ------ Plot acutal sound signal by calling function ---------%
-figure('Name', 'Raw Data 16k');
+figure('Name', 'Raw Data 16k against sample number');
+% plot(data_16k(plot_upper:plot_lower), 'r');
 plot(t_16(1000:1999), data_16k(1000:1999),'r');
 % plotSoundAllPassband(pass_1_array, pass_2_array, data_16k, t_16, passband_num);
 plotSoundTwoPassband(pass_1_array, pass_2_array, data_16k, t_16);
@@ -78,6 +84,8 @@ plotSoundTwoPassband(pass_1_array, pass_2_array, data_16k, t_16);
 
 % For Task 4 and Task 8 in Phase 2 %
 function plotSoundTwoPassband(pass_1_array, pass_2_array, data_16k, t_16)
+    plot_upper = 1000;
+    plot_lower = 1999;
     % Declaring parameters for passband parameters for first and last channels
     low_start=pass_1_array(1);
     low_end=pass_2_array(1);
@@ -86,32 +94,38 @@ function plotSoundTwoPassband(pass_1_array, pass_2_array, data_16k, t_16)
     % Plot lowest channel 
     filtered_data16k_low = filter(Cheb2(low_start, low_end), data_16k);
     figure('Name', 'Bandpass output of lowest channel');
-    plot(t_16((1000:1999)), filtered_data16k_low((1000:1999)),'r');
+%     plot(filtered_data16k_low(plot_upper:plot_lower), 'r');
+    plot(t_16((plot_upper:plot_lower)), filtered_data16k_low((plot_upper:plot_lower)),'r');
     xlabel('Time (s)'); 
     ylabel('Amplitude');
     % Plot rectified lowest channel and the envelope using low pass filter
     rec_filtered_data16k_low = abs(filtered_data16k_low);
     env_rec_filtered_data16k_low  = filter(lp30, rec_filtered_data16k_low);
     figure('Name', 'Envelope of the rectified lowest channel');
-    plot(t_16(1000:1999), rec_filtered_data16k_low(1000:1999),'r'); 
+%     plot(rec_filtered_data16k_low(plot_upper:plot_lower), 'r');
+    plot(t_16(plot_upper:plot_lower), rec_filtered_data16k_low(plot_upper:plot_lower),'r'); 
     hold on;
-    plot(t_16(1000:1999), env_rec_filtered_data16k_low(1000:1999),'b'); 
+    plot(t_16(plot_upper:plot_lower), env_rec_filtered_data16k_low(plot_upper:plot_lower),'b'); 
+%     plot(env_rec_filtered_data16k_low(plot_upper:plot_lower), 'b');
     xlabel('Time (s)') 
     ylabel('Amplitude')
     
     % Plot highest channel 
     filtered_data16k_high = filter(Cheb2(high_start, 7950), data_16k);
     figure('Name', 'Bandpass output of highest channel');
-    plot(t_16(1000:1999), filtered_data16k_high(1000:1999),'r');
+%     plot(filtered_data16k_high(plot_upper:plot_lower), 'r');
+    plot(t_16(plot_upper:plot_lower), filtered_data16k_high(plot_upper:plot_lower),'r');
     xlabel('Time (s)') 
     ylabel('Amplitude')
     % Plot rectified highest channel and the envelope using low pass filter
     rec_filtered_data16k_high = abs(filtered_data16k_high);
     env_rec_filtered_data16k_high  = filter(lp30, rec_filtered_data16k_high);
     figure('Name', 'Envelope of the rectified highest channel');
-    plot(t_16(1000:1999), rec_filtered_data16k_high(1000:1999),'r');
+%     plot(rec_filtered_data16k_high(plot_upper:plot_lower), 'r');
+    plot(t_16(plot_upper:plot_lower), rec_filtered_data16k_high(plot_upper:plot_lower),'r');
     hold on;
-    plot(t_16(1000:1999), env_rec_filtered_data16k_high(1000:1999),'b');
+%     plot(env_rec_filtered_data16k_high(plot_upper:plot_lower), 'b');
+    plot(t_16(plot_upper:plot_lower), env_rec_filtered_data16k_high(plot_upper:plot_lower),'b');
     xlabel('Time (s)') 
     ylabel('Amplitude')
 end
