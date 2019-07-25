@@ -28,15 +28,9 @@ audiowrite(output_file, raw_data_mono, sample_rate);
 % 3.5 Plot sound wave as a function of sample number
 stop_time = size(raw_data_mono)/sample_rate;
 time_step = 1/sample_rate;
-t = time_step:time_step:stop_time;
+% t = time_step:time_step:stop_time;
 sample_number = 1:1:size(raw_data_mono);
-%t = 1:1:size(raw_data_mono);
 
-%disp(strcat('raw_data_mono size: ', string(size(raw_data_mono))));
-%disp(strcat('t size: ', string(size(t))));
-% figure('Name', 'Raw Data Mono vs. Sample Number');
-% plot(sample_number, raw_data_mono,'g');
-% title('3.5 Mono Sound Waveform(Amplitude vs. Sample Number)');
 
 % 3.6 If sampling rate is greater than 16k, downsample it
 data_16k = resample(raw_data_mono, 16000, sample_rate);
@@ -47,10 +41,9 @@ t_16 = 1/rate_16k:1/rate_16k:stop_time_16k;
 
 figure('Name', 'Raw Data Resampled against time');
 plot(t_16(plot_upper:plot_lower), data_16k(plot_upper:plot_lower),'r');
-% sound(data_16k, rate_16k);
+sound(data_16k, rate_16k);
 % figure('Name', 'Data Comparison');
 % plot(t_16(1:1000), data_16k(1:1000),'r',t(1:2750), raw_data_mono(1:2750),'g');
-
 
 
 
@@ -65,11 +58,10 @@ pass_2_array=100+bandwidth:bandwidth:(passband_num+1)*bandwidth;
 
 % ------ Plot acutal sound signal by calling function ---------%
 figure('Name', 'Raw Data 16k against sample number');
-plot(data_16k(plot_upper:plot_lower), 'r');
+plot(data_16k, 'r');
 % plot(t_16(1000:1999), data_16k(1000:1999),'r');
 % plotSoundAllPassband(pass_1_array, pass_2_array, data_16k, t_16, passband_num);
 % plotSoundTwoPassband(pass_1_array, pass_2_array, data_16k, t_16);
-
 
 
 % ------ Plot cosine signal to check correctness ---------%
@@ -86,6 +78,7 @@ plot(data_16k(plot_upper:plot_lower), 'r');
 % ------------------------------------------%
 % --------- Phase 3 starts here ------------%
 
+% TODO: Change file!!!!! because of faint sound
 freq =180;
 cos_center = cos(freq*2*pi*t_16);
 cycle_plot = 4;
@@ -95,8 +88,11 @@ time_plot = cycle_plot/freq;
 % figure('Name', 'Two Waveforms of Cosine Function vesus sample number');
 % plot((cos_center(1:time_plot*rate_16k)) );
 
+sum_signal = zeros(size(data_16k));
+disp(size(sum_signal));
+
 % plotCosAllPassband(pass_1_array, pass_2_array, time_plot, rate_16k, t_16, passband_num);
-plotModSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, plot_upper, plot_lower)
+plotModSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, plot_upper, plot_lower, sum_signal)
 
 function cos_center = genCosCenter (lower, upper, t_16)
     freq =sqrt(lower*upper);
@@ -111,8 +107,8 @@ end
 
 
 % Phase 3 Task 11 %
-function plotModSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, plot_upper, plot_lower)
-    for p = 11:passband_num
+function plotModSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, plot_upper, plot_lower, sum_signal)
+    for p = 1:passband_num
         if p==12
             % For last band, the end parameter need a bit of adjustment
             filtered_data16k = filter(Cheb2(pass_1_array(p),7950), data_16k);
@@ -124,7 +120,8 @@ function plotModSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, 
         end
         rec_filtered_data16k = abs(filtered_data16k);
         env_rec_filtered_data16k = filter(lp30, rec_filtered_data16k);
-        modulated_data16k = times(env_rec_filtered_data16k(plot_upper:plot_lower),filtered_cos1k(plot_upper:plot_lower));
+        modulated_data16k = (env_rec_filtered_data16k).*transpose(filtered_cos1k);
+%         disp(size(modulated_data16k));
 %          modulated_data16k = env_rec_filtered_data16k .* filtered_cos1k;
 %         title=strcat('Env & Rec Sound in frequency',num2str(pass_1_array(p)),'-',num2str(pass_2_array(p)));
 %         figure('Name', title);
@@ -135,14 +132,19 @@ function plotModSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, 
 %         xlabel('Sample Number') 
 %         ylabel('Amplitude')
         % second graph of amplitude modulated signal
-        title=strcat('Amplitude Modulated Sound in frequency',num2str(pass_1_array(p)),'-',num2str(pass_2_array(p)));
-        figure('Name', title);
-        plot(modulated_data16k, 'g');
-        xlabel('Sample Number') 
-        ylabel('Amplitude')
+% %         title=strcat('Amplitude Modulated Sound in frequency',num2str(pass_1_array(p)),'-',num2str(pass_2_array(p)));
+% %         figure('Name', title);
+% %         plot(modulated_data16k, 'g');
+% %         xlabel('Sample Number');
+% %         ylabel('Amplitude');
+        sum_signal = sum_signal + modulated_data16k;
     end
+% %     figure('Name', 'Amplitude Modulated Sound Sum');
+% %     plot(sum_signal, 'r');
+% %     xlabel('Sample Number');
+% %     ylabel('Amplitude');
+%     sound(sum_signal,16000);
 end
-
 
 % For Task 4 and Task 8 in Phase 2 %
 function plotSoundTwoPassband(pass_1_array, pass_2_array, data_16k, t_16)
