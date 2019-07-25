@@ -3,8 +3,8 @@
 % 3.1 Create program to read the file
 filename = 'emmaWatson.mp4';
 [raw_data,sample_rate] = audioread(filename);
-plot_upper = 1000;
-plot_lower =  1999;
+plot_upper = 1;
+plot_lower = 5999;
 
 % 3.2 Check if input sound is stereo
 [m,n] = size(raw_data);
@@ -65,10 +65,10 @@ pass_2_array=100+bandwidth:bandwidth:(passband_num+1)*bandwidth;
 
 % ------ Plot acutal sound signal by calling function ---------%
 figure('Name', 'Raw Data 16k against sample number');
-% plot(data_16k(plot_upper:plot_lower), 'r');
-plot(t_16(1000:1999), data_16k(1000:1999),'r');
+plot(data_16k(plot_upper:plot_lower), 'r');
+% plot(t_16(1000:1999), data_16k(1000:1999),'r');
 % plotSoundAllPassband(pass_1_array, pass_2_array, data_16k, t_16, passband_num);
-plotSoundTwoPassband(pass_1_array, pass_2_array, data_16k, t_16);
+% plotSoundTwoPassband(pass_1_array, pass_2_array, data_16k, t_16);
 
 
 
@@ -80,7 +80,68 @@ plotSoundTwoPassband(pass_1_array, pass_2_array, data_16k, t_16);
 % figure('Name', 'Two Waveforms of Cosine Function');
 % plot(t(1:time_plot*rate_16k),(cos_1kHz(1:time_plot*rate_16k)) );
 % plotCosTwoPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_16k, t_16);
-% plotCosAllPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_16k, t_16, passband_num);
+
+
+% ------------------------------------------%
+% ------------------------------------------%
+% --------- Phase 3 starts here ------------%
+
+freq =180;
+cos_center = cos(freq*2*pi*t_16);
+cycle_plot = 4;
+time_plot = cycle_plot/freq;
+% figure('Name', 'Two Waveforms of Cosine Function vesus time');
+% plot(t(1:time_plot*rate_16k),(cos_center(1:time_plot*rate_16k)) );
+% figure('Name', 'Two Waveforms of Cosine Function vesus sample number');
+% plot((cos_center(1:time_plot*rate_16k)) );
+
+% plotCosAllPassband(pass_1_array, pass_2_array, time_plot, rate_16k, t_16, passband_num);
+plotModSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, plot_upper, plot_lower)
+
+function cos_center = genCosCenter (lower, upper, t_16)
+    freq =sqrt(lower*upper);
+    cos_center = cos(freq*2*pi*t_16);
+%     cycle_plot = 70;
+%     time_plot = cycle_plot/freq;
+%     figure('Name', 'Two Waveforms of Cosine Function vesus time');
+%     plot(t(1:time_plot*rate_16k),(cos_center(1:time_plot*rate_16k)) );
+%     figure('Name', 'Two Waveforms of Cosine Function vesus sample number');
+%     plot((cos_center(1:time_plot*rate_16k)) );
+end
+
+
+% Phase 3 Task 11 %
+function plotModSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, plot_upper, plot_lower)
+    for p = 11:passband_num
+        if p==12
+            % For last band, the end parameter need a bit of adjustment
+            filtered_data16k = filter(Cheb2(pass_1_array(p),7950), data_16k);
+            filtered_cos1k = filter(Cheb2(pass_1_array(p),7950), genCosCenter(pass_1_array(p), 7950, t_16));
+        else
+            % Use Cheb2 as the band pass filter function
+            filtered_data16k = filter(Cheb2(pass_1_array(p),pass_2_array(p)), data_16k);
+            filtered_cos1k = filter(Cheb2(pass_1_array(p),pass_2_array(p)),  genCosCenter(pass_1_array(p), pass_2_array(p), t_16));
+        end
+        rec_filtered_data16k = abs(filtered_data16k);
+        env_rec_filtered_data16k = filter(lp30, rec_filtered_data16k);
+        modulated_data16k = times(env_rec_filtered_data16k(plot_upper:plot_lower),filtered_cos1k(plot_upper:plot_lower));
+%          modulated_data16k = env_rec_filtered_data16k .* filtered_cos1k;
+%         title=strcat('Env & Rec Sound in frequency',num2str(pass_1_array(p)),'-',num2str(pass_2_array(p)));
+%         figure('Name', title);
+% %         Only plotted a tiny cycle, but actual signal is at size data_16k
+%         plot(rec_filtered_data16k(plot_upper:plot_lower), 'r');
+%         hold on;
+%         plot(env_rec_filtered_data16k(plot_upper:plot_lower), 'b');
+%         xlabel('Sample Number') 
+%         ylabel('Amplitude')
+        % second graph of amplitude modulated signal
+        title=strcat('Amplitude Modulated Sound in frequency',num2str(pass_1_array(p)),'-',num2str(pass_2_array(p)));
+        figure('Name', title);
+        plot(modulated_data16k, 'g');
+        xlabel('Sample Number') 
+        ylabel('Amplitude')
+    end
+end
 
 
 % For Task 4 and Task 8 in Phase 2 %
@@ -163,16 +224,20 @@ function plotCosTwoPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rat
 end
 
 % Checker function using cosine %
-function plotCosAllPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_16k, t_16, passband_num)
+function plotCosAllPassband(pass_1_array, pass_2_array, time_plot, rate_16k, t_16, passband_num)
     for p = 1:passband_num
         if p==12
-            filtered_cos1k = filter(Cheb2(pass_1_array(p),7950), cos_1kHz);
+            
+            filtered_cos1k = filter(Cheb2(pass_1_array(p),7950), genCosCenter(pass_1_array(p), 7950, t_16));
         else
-            filtered_cos1k = filter(Cheb2(pass_1_array(p),pass_2_array(p)), cos_1kHz);
+            
+            filtered_cos1k = filter(Cheb2(pass_1_array(p),pass_2_array(p)),  genCosCenter(pass_1_array(p), pass_2_array(p), t_16));
         end
         title=strcat('Bandpass cosine function in frequency',num2str(pass_1_array(p)),'-',num2str(pass_2_array(p)));
         figure('Name', title);
+        % Only plotted a tiny cycle, but actual signal is at size data_16k
         plot(t_16(1:time_plot*rate_16k),(filtered_cos1k(1:time_plot*rate_16k)) );
+        
     end
 end
 
