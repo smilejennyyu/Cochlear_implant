@@ -1,6 +1,6 @@
 %%------Phase 1 start here-------------------------------------------------------%%
 % 3.1 Create program to read the file
-filename = 'emmaWatson.mp4';
+filename = 'Khan_Girl.wav';
 [raw_data,sample_rate] = audioread(filename);
 plot_upper = 1;
 plot_lower = 5999;
@@ -85,8 +85,9 @@ mod_sound = ModulateSound(pass_1_array, pass_2_array, data_16k, t_16, passband_n
 % Below to hear re-constructed sound file
 sound(mod_sound, rate_16k);
 % Task 13 Write sound to a new file 
-mod_output_file = strcat('Mod_', filename);
+mod_output_file = strcat('new_output.wav'); 
 audiowrite(mod_output_file, mod_sound, rate_16k); % Does not work right now
+
 
 %% ------- Functions to call and simplify are below ------- %%
 % Function to generate cos function at central freq of the given band
