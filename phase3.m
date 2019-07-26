@@ -36,7 +36,8 @@ stop_time_16k = size(data_16k)/rate_16k;
 t_16 = 1/rate_16k:1/rate_16k:stop_time_16k;
 % figure('Name', 'Raw Data Resampled against time');
 % plot(t_16(plot_upper:plot_lower), data_16k(plot_upper:plot_lower),'r');
-sound(data_16k, rate_16k);
+% Uncomment line below to hear downsampled sound file
+% sound(data_16k, rate_16k);
 
 
 %% ------Phase 2 start here------- %%
@@ -79,7 +80,13 @@ time_plot = cycle_plot/freq;
 
 
 % plotCosAllPassband(pass_1_array, pass_2_array, time_plot, rate_16k, t_16, passband_num);
-plotModSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, plot_upper, plot_lower, sum_signal)
+% Task 11 
+mod_sound = ModulateSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, plot_upper, plot_lower, sum_signal);
+% Below to hear re-constructed sound file
+sound(mod_sound, rate_16k);
+% Task 13 Write sound to a new file 
+mod_output_file = strcat('Mod_', filename);
+audiowrite(mod_output_file, mod_sound, rate_16k); % Does not work right now
 
 %% ------- Functions to call and simplify are below ------- %%
 % Function to generate cos function at central freq of the given band
@@ -96,7 +103,7 @@ function cos_center = genCosCenter (lower, upper, t_16)
 end
 
 % Phase 3 Task 11 %
-function plotModSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, plot_upper, plot_lower, sum_signal)
+function sum_signal = ModulateSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, plot_upper, plot_lower, sum_signal)
     for p = 1:passband_num
         if p==12
             % For last band, the end parameter need a bit of adjustment
@@ -132,7 +139,6 @@ function plotModSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, 
 % %     plot(sum_signal, 'r');
 % %     xlabel('Sample Number');
 % %     ylabel('Amplitude');
-%     sound(sum_signal,16000);
 end
 
 % For Task 4 and Task 8 in Phase 2 %
