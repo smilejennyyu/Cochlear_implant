@@ -1,7 +1,7 @@
 %%------Phase 1 start here-------------------------------------------------------%%
 % 3.1 Create program to read the file
-filename = 'Khan_Girl.wav';
-[raw_data,sample_rate] = audioread(filename);
+filename = 'Emma_Wat.wav';
+[raw_data,sample_rate] = audioread(strcat('soundFiles/',filename));
 plot_upper = 1;
 plot_lower = 5999;
 
@@ -19,7 +19,7 @@ end
 
 % 3.4 Write sound to a new file 
 output_file = strcat('new_', filename);
-audiowrite(output_file, raw_data_mono, sample_rate);
+audiowrite(strcat('outputSound/',output_file), raw_data_mono, sample_rate);
 
 % 3.5 Plot sound wave as a function of sample number
 % % % stop_time = size(raw_data_mono)/sample_rate;
@@ -83,12 +83,27 @@ time_plot = cycle_plot/freq;
 % Task 11 
 mod_sound = ModulateSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, plot_upper, plot_lower, sum_signal);
 % Below to hear re-constructed sound file
+% sound(data_16k, rate_16k);
 sound(mod_sound, rate_16k);
 % Task 13 Write sound to a new file 
-mod_output_file = strcat('new_output.wav'); 
-audiowrite(mod_output_file, mod_sound, rate_16k); % Does not work right now
+output_file = strcat('new_', filename);
 
+mod_output_file = strcat('new_output_', filename); 
+audiowrite(strcat('finalOutput/lp30',mod_output_file), mod_sound, rate_16k); % Does not work right now
 
+%Take standard deviation of data16 k
+std_data_16k = std(data_16k);
+std_mod_sound = std(mod_sound);
+sum_diff = mean(abs(mod_sound-data_16k));
+square_diff = sqrt(mean((mod_sound-data_16k).^2));
+average_diff = abs(mean(mod_sound)-mean(data_16k));
+% display(std_data_16k);
+% display(std_mod_sound);
+% display(std_diff);
+% display(sum_diff);
+% display(square_diff);
+% display(average_diff);
+evn_average_diff = zeros(1,4);
 %% ------- Functions to call and simplify are below ------- %%
 % Function to generate cos function at central freq of the given band
 function cos_center = genCosCenter (lower, upper, t_16)
@@ -104,7 +119,7 @@ function cos_center = genCosCenter (lower, upper, t_16)
 end
 
 % Phase 3 Task 11 %
-function sum_signal = ModulateSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, plot_upper, plot_lower, sum_signal)
+function sum_signal = ModulateSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, plot_upper, plot_lower, sum_signal, evn_average_diff)
     for p = 1:passband_num
         if p==12
             % For last band, the end parameter need a bit of adjustment
@@ -118,16 +133,16 @@ function sum_signal = ModulateSound(pass_1_array, pass_2_array, data_16k, t_16, 
         rec_filtered_data16k = abs(filtered_data16k);
         env_rec_filtered_data16k = filter(lp30, rec_filtered_data16k);
         modulated_data16k = (env_rec_filtered_data16k).*transpose(filtered_cos1k);
-%         disp(size(modulated_data16k));
-%          modulated_data16k = env_rec_filtered_data16k .* filtered_cos1k;
-%         title=strcat('Env & Rec Sound in frequency',num2str(pass_1_array(p)),'-',num2str(pass_2_array(p)));
-%         figure('Name', title);
+        env_diff = abs(mean(rec_filtered_data16k)-mean(env_rec_filtered_data16k));
+        evn_average_diff(p) = env_diff;
+        title=strcat('Env & Rec Sound in frequency',num2str(pass_1_array(p)),'-',num2str(pass_2_array(p)));
+        figure('Name', title);
 % %         Only plotted a tiny cycle, but actual signal is at size data_16k
-%         plot(rec_filtered_data16k(plot_upper:plot_lower), 'r');
-%         hold on;
-%         plot(env_rec_filtered_data16k(plot_upper:plot_lower), 'b');
-%         xlabel('Sample Number') 
-%         ylabel('Amplitude')
+        plot(rec_filtered_data16k(plot_upper:plot_lower), 'r');
+        hold on;
+        plot(env_rec_filtered_data16k(plot_upper:plot_lower), 'b');
+        xlabel('Sample Number') 
+        ylabel('Amplitude')
         % second graph of amplitude modulated signal
 % %         title=strcat('Amplitude Modulated Sound in frequency',num2str(pass_1_array(p)),'-',num2str(pass_2_array(p)));
 % %         figure('Name', title);
@@ -136,17 +151,18 @@ function sum_signal = ModulateSound(pass_1_array, pass_2_array, data_16k, t_16, 
 % %         ylabel('Amplitude');
         sum_signal = sum_signal + modulated_data16k;
     end
+    display(mean(evn_average_diff));
 %     figure('Name', 'Amplitude Modulated Sound Sum');
 %     plot(sum_signal, 'g');
 %     xlabel('Sample Number');
 %     ylabel('Amplitude');
     %normalized signal
-    sum_signal = normalize(sum_signal,'norm',Inf);
+%     sum_signal = normalize(sum_signal,'norm',Inf);
 
-%     figure('Name', 'Normalized Amplitude Modulated Sound Sum');
-%     plot(sum_signal, 'b');
-%     xlabel('Normalized Sample Number');
-%     ylabel('Amplitude');
+    figure('Name', 'Normalized Amplitude Modulated Sound Sum');
+    plot(sum_signal, 'b');
+    xlabel('Normalized Sample Number');
+    ylabel('Amplitude');
 end
 
 % For Task 4 and Task 8 in Phase 2 %
@@ -258,8 +274,8 @@ function Hd30 = lp30
 Fs = 16000;  % Sampling Frequency
 
 N     = 50;   % Order
-Fpass = 400;  % Passband Frequency
-Fstop = 450;  % Stopband Frequency
+Fpass = 470;  % Passband Frequency
+Fstop = 510;  % Stopband Frequency
 Wpass = 1;    % Passband Weight
 Wstop = 1;    % Stopband Weight
 
