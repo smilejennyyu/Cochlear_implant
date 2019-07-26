@@ -1,4 +1,4 @@
-%%------Phase 1 start here-------------------------------------------------------%%
+%------Phase 1 start here-------------------------------------------------------%
 % 3.1 Create program to read the file
 filename = 'emmaWatson.mp4';
 [raw_data,sample_rate] = audioread(filename);
@@ -34,12 +34,15 @@ data_16k = resample(raw_data_mono, 16000, sample_rate);
 rate_16k = 16000;
 stop_time_16k = size(data_16k)/rate_16k;
 t_16 = 1/rate_16k:1/rate_16k:stop_time_16k;
-% figure('Name', 'Raw Data Resampled against time');
-% plot(t_16(plot_upper:plot_lower), data_16k(plot_upper:plot_lower),'r');
+
+figure('Name', 'Raw Data Resampled against time');
+plot(t_16(plot_upper:plot_lower), data_16k(plot_upper:plot_lower),'r');
 sound(data_16k, rate_16k);
 
 
-%% ------Phase 2 start here------- %%
+
+
+%------Phase 2 start here-------%
 %------------------------------------------------------------------------------------%
 % declaring parameters
 passband_num=12;
@@ -65,9 +68,9 @@ plot(data_16k, 'r');
 % plotCosTwoPassband(pass_1_array, pass_2_array, cos_1kHz, time_plot, rate_16k, t_16);
 
 
-
-%% --------- Phase 3 starts here ------------%%
-
+% ------------------------------------------%
+% ------------------------------------------%
+% --------- Phase 3 starts here ------------%
 % Parameters %
 sum_signal = zeros(size(data_16k));
 
@@ -81,7 +84,7 @@ time_plot = cycle_plot/freq;
 % plotCosAllPassband(pass_1_array, pass_2_array, time_plot, rate_16k, t_16, passband_num);
 plotModSound(pass_1_array, pass_2_array, data_16k, t_16, passband_num, plot_upper, plot_lower, sum_signal)
 
-%% ------- Functions to call and simplify are below ------- %%
+%% Functions to call and simplify arebelow %%
 % Function to generate cos function at central freq of the given band
 function cos_center = genCosCenter (lower, upper, t_16)
     freq =sqrt(lower*upper);
@@ -232,7 +235,6 @@ function plotCosAllPassband(pass_1_array, pass_2_array, time_plot, rate_16k, t_1
     end
 end
 
-%% ------- Filter banks below ------- %%
 %----- low pass filter bank ----%
 % lp30 is the chosen low pass filter
 function Hd30 = lp30
