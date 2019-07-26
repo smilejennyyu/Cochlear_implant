@@ -136,10 +136,17 @@ function sum_signal = ModulateSound(pass_1_array, pass_2_array, data_16k, t_16, 
 % %         ylabel('Amplitude');
         sum_signal = sum_signal + modulated_data16k;
     end
-% %     figure('Name', 'Amplitude Modulated Sound Sum');
-% %     plot(sum_signal, 'r');
-% %     xlabel('Sample Number');
-% %     ylabel('Amplitude');
+%     figure('Name', 'Amplitude Modulated Sound Sum');
+%     plot(sum_signal, 'g');
+%     xlabel('Sample Number');
+%     ylabel('Amplitude');
+    %normalized signal
+    sum_signal = normalize(sum_signal,'norm',Inf);
+
+%     figure('Name', 'Normalized Amplitude Modulated Sound Sum');
+%     plot(sum_signal, 'b');
+%     xlabel('Normalized Sample Number');
+%     ylabel('Amplitude');
 end
 
 % For Task 4 and Task 8 in Phase 2 %
