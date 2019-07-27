@@ -19,7 +19,7 @@ end
 
 % 3.4 Write sound to a new file 
 output_file = strcat('new_', filename);
-audiowrite(strcat('outputSound/',output_file), raw_data_mono, sample_rate);
+audiowrite(strcat('originalCopy/',output_file), raw_data_mono, sample_rate);
 
 % 3.5 Plot sound wave as a function of sample number
 % figure('Name', 'Raw Data Mono against sample number');
